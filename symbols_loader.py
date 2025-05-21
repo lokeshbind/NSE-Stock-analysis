@@ -1,6 +1,5 @@
 print("symbols_loader.py started")
 
-# rest of your code below...
 import pandas as pd
 import requests
 from io import StringIO
