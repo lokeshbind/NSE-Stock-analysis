@@ -2,32 +2,43 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 from datetime import date
+from symbols_loader import get_nse_symbols
 
-st.title("📈 NSE Stock Analyzer – June Returns")
-st.write("Analyze Indian stocks that consistently gained **10%+ in June** over the past 10 years.")
+st.title("📊 NSE Stock Analyzer with All NSE Symbols")
 
-tickers = st.text_area("Enter NSE Ticker Symbols (comma-separated, like INFY.NS, RELIANCE.NS)", 
-                       "RELIANCE.NS, HDFCBANK.NS, TCS.NS, SBIN.NS").split(',')
+# Load all NSE symbols
+tickers = get_nse_symbols()
 
-tickers = [t.strip().upper() for t in tickers if t.strip()]
+# User selects which tickers to analyze (default first 10)
+selected_tickers = st.multiselect(
+    "Select stocks to analyze (or type)", 
+    tickers, 
+    default=tickers[:10]
+)
 
-min_years = st.slider("Minimum Years with ≥10% Gain in June", min_value=1, max_value=10, value=7)
+# Choose month range for analysis
+start_month = st.selectbox("Start Month", list(range(1, 13)), index=5)  # Default June
+end_month = st.selectbox("End Month", list(range(1, 13)), index=5)      # Default June
+
+# Minimum years with ≥10% gain in selected months
+min_years = st.slider("Minimum Years with ≥10% Gain", 1, 10, 7)
 
 if st.button("Run Analysis"):
-    with st.spinner("Fetching data..."):
+    with st.spinner("Fetching data and analyzing..."):
         today = date.today()
         years = list(range(today.year - 10, today.year))
         results = []
 
-        for ticker in tickers:
+        for ticker in selected_tickers:
             try:
                 stock = yf.Ticker(ticker)
                 success_count = 0
                 yearly_returns = []
 
                 for year in years:
-                    start = date(year, 6, 1)
-                    end = date(year, 6, 30)
+                    start = date(year, start_month, 1)
+                    # Use 28 as safe day (to avoid month-end errors)
+                    end = date(year, end_month, 28)
                     df = stock.history(start=start, end=end)
 
                     if df.empty or len(df) < 2:
@@ -48,8 +59,8 @@ if st.button("Run Analysis"):
                     results.append({
                         'Ticker': ticker,
                         'Success_Count': success_count,
-                        'Avg_June_Return': avg_return,
-                        'Yearly_June_Returns': yearly_returns
+                        'Avg_Return': avg_return,
+                        'Yearly_Returns': yearly_returns
                     })
             except Exception as e:
                 st.error(f"Error with {ticker}: {e}")
@@ -61,4 +72,3 @@ if st.button("Run Analysis"):
             st.dataframe(result_df)
         else:
             st.warning("No stocks met the criteria.")
-
