@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 from io import StringIO
 
+
 def get_nse_symbols():
     url = "https://www1.nseindia.com/content/equities/EQUITY_L.csv"
     headers = {
@@ -22,4 +23,5 @@ def get_nse_symbols():
     except Exception as e:
         print("Failed to fetch NSE symbols:", e)
         return []
-
+if __name__ == "__main__":
+    print(get_nse_symbols())
