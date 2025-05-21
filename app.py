@@ -9,7 +9,16 @@ st.title("📊 NSE Stock Analyzer with All NSE Symbols")
 # Load all NSE symbols
 tickers = get_nse_symbols()
 
-# User selects which tickers to analyze (default first 10)
+if not tickers:
+    st.warning("⚠️ Failed to load NSE symbols. Please check your internet connection or NSE site availability.")
+    st.stop()
+else:
+    selected_tickers = st.multiselect(
+        "Select stocks to analyze (or type)", 
+        tickers, 
+        default=tickers[:10]
+    )
+
 selected_tickers = st.multiselect(
     "Select stocks to analyze (or type)", 
     tickers, 
